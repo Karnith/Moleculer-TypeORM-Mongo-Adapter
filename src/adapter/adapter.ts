@@ -1,0 +1,265 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {
+	// createConnection,
+	getConnectionManager,
+	ConnectionOptions,
+	Connection,
+	EntitySchema,
+	MongoRepository,
+	FindOneOptions,
+	DeepPartial,
+	FindConditions,
+	FindManyOptions,
+	GridFSBucket,
+	getConnection,
+	MongoClient,
+	ConnectionManager,
+} from 'typeorm';
+import { PlatformTools } from 'typeorm/platform/PlatformTools';
+import fs from 'fs';
+// import * as Moleculer from 'moleculer';
+import { Service, ServiceBroker } from 'moleculer';
+import assert from 'assert';
+
+interface IndexMap {
+	[key: string]: string;
+}
+
+export class TypeOrmDbAdapter<T> {
+	public broker: ServiceBroker;
+	public service: Service;
+	public repository: MongoRepository<T>;
+	public connection: Connection;
+	public connectionMngr: ConnectionManager;
+	private entity: EntitySchema<T>;
+	private opts: ConnectionOptions;
+
+	constructor(opts: ConnectionOptions) {
+		this.opts = opts;
+	}
+
+	public init(broker: ServiceBroker, service: Service) {
+		this.broker = broker;
+		this.service = service;
+		const entityFromService = this.service.schema.model;
+		const isValid = !!entityFromService.constructor;
+		if (!isValid) {
+			throw new Error('if model is provided - it should be a typeorm repository');
+		}
+		this.entity = entityFromService;
+	}
+
+	public async find(filters: any) {
+		return this.createCursor(filters, false);
+	}
+
+	public async findOne(query: FindOneOptions) {
+		return this.repository.findOne(query);
+	}
+
+	public async findById(id: string) {
+		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
+		return this.repository
+			.findByIds([new objectIdInstance(id)])
+			.then(async (result) => Promise.resolve(result[0]));
+		// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+		// @ts-ignore
+		// return this.repository.findOne(new entity(), { id: id });
+	}
+
+	public async findByIds(idList: any[]) {
+		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
+		const idArray: any[] = idList.map((id) => {
+			return id instanceof objectIdInstance ? id : new objectIdInstance(id);
+		});
+		return this.repository.findByIds(idArray);
+	}
+
+	public async count(filters = {}) {
+		return this.createCursor(filters, true);
+	}
+
+	public async insert(entity: any) {
+		return this.repository.save(entity);
+	}
+
+	public async create(entity: any) {
+		return this.insert(entity);
+	}
+
+	public async insertMany(entities: any[]) {
+		return Promise.all(entities.map((e) => this.repository.create(e)));
+	}
+
+	public async updateMany(where: FindConditions<T>, update: DeepPartial<T>) {
+		const criteria: FindConditions<T> = { where } as any;
+		return this.repository.update(criteria, update as any);
+	}
+
+	public async updateById(id: string, update: { $set: DeepPartial<T> }) {
+		const result = this.repository.update(id, update.$set as any);
+		return result.then(() => {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+			// @ts-ignore
+			update.$set.id = id;
+			return update.$set;
+		});
+	}
+
+	public async removeMany(where: FindConditions<T>) {
+		return this.repository.delete(where);
+	}
+
+	public async removeById(id: string) {
+		const result = this.repository.delete(id);
+		return result.then(() => {
+			return { id };
+		});
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	public beforeSaveTransformID(entity: T, _idField: string) {
+		return entity;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	public afterRetrieveTransformID(entity: T, _idField: string) {
+		return entity;
+	}
+
+	public saveLargFile(file: any) {
+		const mongoClient = (getConnection(this.opts.name).driver as any).queryRunner
+			.databaseConnetion as MongoClient;
+		const db: any = mongoClient.db(this.opts.database?.toString());
+		const bucket = new GridFSBucket(db);
+		fs.createReadStream(file)
+			.pipe(bucket.openUploadStream(file))
+			.on('error', (error) => assert.ifError(error))
+			.on('finish', () => {
+				console.log();
+				process.exit(0);
+			});
+	}
+
+	public async connect(mode: string, options: ConnectionOptions, cb: any) {
+		if (mode.toLowerCase() === 'standard') {
+			const connectionManager = getConnectionManager();
+			const connectionPromise = connectionManager.create({
+				type: 'mongodb',
+				entities: [this.entity],
+				synchronize: true,
+				// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+				// @ts-ignore
+				useNewUrlParser: true,
+				useUnifiedTopology: true,
+				...this.opts,
+			});
+			const connection = await connectionPromise.connect();
+			this.connection = connection;
+			this.repository = this.connection.getMongoRepository(this.entity);
+		}
+
+		if (mode.toLowerCase() === 'mt') {
+			if (!options) {
+				const connectionManager = getConnectionManager();
+				const connectionPromise = connectionManager.create({
+					entities: [this.entity],
+					...this.opts,
+				});
+				const connection = await connectionPromise.connect();
+				this.connection = connection;
+				this.connectionMngr = connectionManager;
+				this.repository = this.connection.getMongoRepository(this.entity);
+			} else {
+				const connectionManager = getConnectionManager();
+				const connectionPromise = connectionManager.create({
+					...options,
+				});
+				await connectionPromise.connect();
+				cb(getConnection(options.name));
+			}
+		}
+	}
+
+	public async disconnect() {
+		if (this.connection) {
+			return this.connection.close();
+		}
+		return Promise.resolve();
+	}
+
+	public async clear() {
+		return this.repository.clear();
+	}
+
+	public entityToObject(entity: T) {
+		return entity;
+	}
+
+	public async createCursor(params: any, isCounting: boolean = false) {
+		if (params) {
+			const query: FindManyOptions<T> = {
+				where: params.query || {},
+			};
+			this._enrichWithOptionalParameters(params, query);
+
+			return this._runQuery(isCounting, query);
+		}
+
+		return this._runQuery(isCounting);
+	}
+
+	private async _runQuery(isCounting: boolean, query?: FindManyOptions<T>) {
+		if (isCounting) {
+			return this.repository.count(query);
+		} else {
+			return this.repository.find(query);
+		}
+	}
+
+	private async _enrichWithOptionalParameters(params: any, query: FindManyOptions<T>) {
+		if (params.search) {
+			throw new Error('Not supported because of missing or clause meanwhile in typeorm');
+		}
+
+		if (params.sort) {
+			const sort = this.transformSort(params.sort);
+			if (sort) {
+				query.order = sort as any;
+			}
+		}
+
+		if (Number.isInteger(params.offset) && params.offset > 0) {
+			query.skip = params.offset;
+		}
+
+		if (Number.isInteger(params.limit) && params.limit > 0) {
+			query.take = params.limit;
+		}
+	}
+
+	private transformSort(paramSort: string | string[]): { [columnName: string]: 'ASC' | 'DESC' } {
+		let sort = paramSort;
+		if (typeof sort === 'string') {
+			sort = sort.replace(/,/, ' ').split(' ');
+		}
+		if (Array.isArray(sort)) {
+			const sortObj: IndexMap = {};
+			sort.forEach((s) => {
+				if (s.startsWith('-')) {
+					sortObj[s.slice(1)] = 'DESC';
+				} else {
+					sortObj[s] = 'ASC';
+				}
+			});
+			// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+			// @ts-ignore
+			return sortObj;
+		}
+
+		if (typeof sort === 'object') {
+			return sort;
+		}
+		return {};
+	}
+}
