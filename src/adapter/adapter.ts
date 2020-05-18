@@ -1,4 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/*
+ * moleculer-db-adapter-typeorm-mongo
+ * Copyright (c) 2020 Matthew Marino (https://github.com/Karnith/Moleculer-TypeORM-Mongo-Adapter)
+ * MIT Licensed
+ */
 import {
 	// createConnection,
 	getConnectionManager,
@@ -25,6 +30,33 @@ interface IndexMap {
 	[key: string]: string;
 }
 
+/**
+ * Mongo TypeORM Adapter
+ *
+ * @example
+ * ```js
+ * adapter: new TypeOrmDbAdapter({
+ *		database: 'test',
+ *		name: 'conneciton name',
+ *		type: 'mongodb',
+ *		host: 'localhost',
+ *		port: 27017,
+ *		entities: [Entity],
+ *		synchronize: true,
+ *		useNewUrlParser: true,
+ *		useUnifiedTopology: true,
+ *	}),
+ *
+ * // TypeORM model or entity
+ * model: Entity,
+ *
+ * mode: 'standard' // standard for standard connection or mt for multitenant,
+ * ```
+ *
+ * @name Moleculer typeorm mongo adapter
+ * @module Service
+ *
+ */
 export class TypeOrmDbAdapter<T> {
 	public broker: ServiceBroker;
 	public service: Service;
@@ -34,10 +66,21 @@ export class TypeOrmDbAdapter<T> {
 	private entity: EntitySchema<T>;
 	private opts: ConnectionOptions;
 
+	/**
+	 * Create an instance of TypeOrmDBAdapter
+	 * @param opts
+	 */
 	constructor(opts: ConnectionOptions) {
 		this.opts = opts;
 	}
 
+	/**
+	 * Initialize adapter
+	 *
+	 * @param broker
+	 * @param service
+	 *
+	 */
 	public init(broker: ServiceBroker, service: Service) {
 		this.broker = broker;
 		this.service = service;
@@ -49,14 +92,32 @@ export class TypeOrmDbAdapter<T> {
 		this.entity = entityFromService;
 	}
 
+	/**
+	 * Entity find
+	 *
+	 * @param filters
+	 *
+	 */
 	public async find(filters: any) {
 		return this.createCursor(filters, false);
 	}
 
+	/**
+	 * Entity fineone
+	 *
+	 * @param query
+	 *
+	 */
 	public async findOne(query: FindOneOptions) {
 		return this.repository.findOne(query);
 	}
 
+	/**
+	 * Entity find by id
+	 *
+	 * @param id
+	 *
+	 */
 	public async findById(id: string) {
 		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
 		return this.repository
@@ -67,6 +128,12 @@ export class TypeOrmDbAdapter<T> {
 		// return this.repository.findOne(new entity(), { id: id });
 	}
 
+	/**
+	 * Entity find by array of ids
+	 *
+	 * @param idList
+	 *
+	 */
 	public async findByIds(idList: any[]) {
 		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
 		const idArray: any[] = idList.map((id) => {
@@ -75,27 +142,65 @@ export class TypeOrmDbAdapter<T> {
 		return this.repository.findByIds(idArray);
 	}
 
+	/**
+	 * Entity count
+	 *
+	 * @param filters
+	 *
+	 */
 	public async count(filters = {}) {
 		return this.createCursor(filters, true);
 	}
 
+	/**
+	 * Entity insert
+	 *
+	 * @param entity
+	 *
+	 */
 	public async insert(entity: any) {
 		return this.repository.save(entity);
 	}
 
+	/**
+	 * Entity create
+	 *
+	 * @param entity
+	 *
+	 */
 	public async create(entity: any) {
 		return this.insert(entity);
 	}
 
+	/**
+	 * Entity insert array of objects
+	 *
+	 * @param entities
+	 *
+	 */
 	public async insertMany(entities: any[]) {
 		return Promise.all(entities.map((e) => this.repository.create(e)));
 	}
 
+	/**
+	 * Entity update many
+	 *
+	 * @param where
+	 * @param update
+	 *
+	 */
 	public async updateMany(where: FindConditions<T>, update: DeepPartial<T>) {
 		const criteria: FindConditions<T> = { where } as any;
 		return this.repository.update(criteria, update as any);
 	}
 
+	/**
+	 * Entity update by id
+	 *
+	 * @param id
+	 * @param update
+	 *
+	 */
 	public async updateById(id: string, update: { $set: DeepPartial<T> }) {
 		const result = this.repository.update(id, update.$set as any);
 		return result.then(() => {
@@ -106,10 +211,22 @@ export class TypeOrmDbAdapter<T> {
 		});
 	}
 
+	/**
+	 * Entity remove many
+	 *
+	 * @param where
+	 *
+	 */
 	public async removeMany(where: FindConditions<T>) {
 		return this.repository.delete(where);
 	}
 
+	/**
+	 * Entity remove by id
+	 *
+	 * @param id
+	 *
+	 */
 	public async removeById(id: string) {
 		const result = this.repository.delete(id);
 		return result.then(() => {
@@ -141,6 +258,14 @@ export class TypeOrmDbAdapter<T> {
 			});
 	}
 
+	/**
+	 * Conect to database
+	 *
+	 * @param mode
+	 * @param options
+	 * @param cb
+	 *
+	 */
 	public async connect(mode: string, options: ConnectionOptions, cb: any) {
 		if (mode.toLowerCase() === 'standard') {
 			const connectionManager = getConnectionManager();
@@ -181,6 +306,9 @@ export class TypeOrmDbAdapter<T> {
 		}
 	}
 
+	/**
+	 * Disconnect from database
+	 */
 	public async disconnect() {
 		if (this.connection) {
 			return this.connection.close();
@@ -196,6 +324,13 @@ export class TypeOrmDbAdapter<T> {
 		return entity;
 	}
 
+	/**
+	 * Create cursor
+	 *
+	 * @param params
+	 * @param isCounting
+	 *
+	 */
 	public async createCursor(params: any, isCounting: boolean = false) {
 		if (params) {
 			const query: FindManyOptions<T> = {
