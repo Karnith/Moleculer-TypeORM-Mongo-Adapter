@@ -33,26 +33,6 @@ interface IndexMap {
 /**
  * Mongo TypeORM Adapter
  *
- * @example
- * ```js
- * adapter: new TypeOrmDbAdapter({
- *		database: 'test',
- *		name: 'conneciton name',
- *		type: 'mongodb',
- *		host: 'localhost',
- *		port: 27017,
- *		entities: [Entity],
- *		synchronize: true,
- *		useNewUrlParser: true,
- *		useUnifiedTopology: true,
- *	}),
- *
- * // TypeORM model or entity
- * model: Entity,
- *
- * mode: 'standard' // standard for standard connection or mt for multitenant,
- * ```
- *
  * @name Moleculer typeorm mongo adapter
  * @module Service
  *
@@ -253,7 +233,6 @@ export class TypeOrmDbAdapter<T> {
 			.pipe(bucket.openUploadStream(file))
 			.on('error', (error) => assert.ifError(error))
 			.on('finish', () => {
-				console.log();
 				process.exit(0);
 			});
 	}

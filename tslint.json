@@ -51,7 +51,9 @@
       "check-type-operator"
     ],
     "no-console": true,
-    "prefer-const": true
+    "prefer-const": true,
+    "no-var-requires": false,
+    "no-submodule-imports": false
   }
 }
 
