@@ -77,7 +77,7 @@
   },
   "pre-commit": [
     "lint",
-    "tsc",
+    "tsc"
   ],
   "jest": {
     "testEnvironment": "node",
