@@ -75,6 +75,8 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity find
 	 *
+	 * @actions
+	 *
 	 * @param filters
 	 *
 	 */
@@ -323,6 +325,61 @@ export class TypeOrmDbAdapter<T> {
 		return this._runQuery(isCounting);
 	}
 
+	/**
+	 * Database utils
+	 */
+
+	public async addUser(
+		url: string,
+		connectionOpts: any,
+		username: string,
+		password: string,
+		options?: object,
+	) {
+		return this._addUser(url, connectionOpts, username, password, options);
+	}
+
+	public async command(url: string, connectionOpts: any, command: string, options?: object) {
+		return this._command(url, connectionOpts, command, options);
+	}
+
+	public async createDB(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+			databaseName: string;
+			// topology?: object,
+			// options?: object,
+		},
+		userOpts?: { [key: string]: any },
+	) {
+		return this._createDB(obj, userOpts);
+	}
+
+	/**
+	 * List Databases on server
+	 *
+	 * @param url Mongodb url wihtout database
+	 * @param opts Mondodb connection options
+	 */
+	public async listDataBases(url: string, opts: any) {
+		return this._databaseList(url, opts);
+	}
+
+	public async removeUser(url: string, connectionOpts: any, username: string, options?: object) {
+		return this._removeUser(url, connectionOpts, username, options);
+	}
+
+	/**
+	 * Private methods
+	 */
+
+	/**
+	 * Run query
+	 * @param isCounting
+	 * @param query
+	 */
 	private async _runQuery(isCounting: boolean, query?: FindManyOptions<T>) {
 		if (isCounting) {
 			return this.repository.count(query);
@@ -331,6 +388,11 @@ export class TypeOrmDbAdapter<T> {
 		}
 	}
 
+	/**
+	 * Enrich With Optional Parameters
+	 * @param params
+	 * @param query
+	 */
 	private async _enrichWithOptionalParameters(params: any, query: FindManyOptions<T>) {
 		if (params.search) {
 			throw new Error('Not supported because of missing or clause meanwhile in typeorm');
@@ -352,6 +414,10 @@ export class TypeOrmDbAdapter<T> {
 		}
 	}
 
+	/**
+	 * Transform sort
+	 * @param paramSort
+	 */
 	private transformSort(paramSort: string | string[]): { [columnName: string]: 'ASC' | 'DESC' } {
 		let sort = paramSort;
 		if (typeof sort === 'string') {
@@ -375,5 +441,127 @@ export class TypeOrmDbAdapter<T> {
 			return sort;
 		}
 		return {};
+	}
+
+	private async _addUser(
+		url: string,
+		connectionOpts: object,
+		username: string,
+		password: string,
+		options?: object,
+	) {
+		const mongodbdriver = this.connection.driver as any;
+		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
+		const addUser = dbConnection
+			.connect()
+			.then(async (clientconn: any) =>
+				clientconn
+					.db()
+					.admin()
+					.addUser(encodeURIComponent(username), encodeURIComponent(password), options),
+			)
+			// .then((dbs: { databases: any }) => {
+			// 	return dbs.databases;
+			// })
+			.finally(async () => {
+				await dbConnection.close();
+			});
+
+		return addUser;
+	}
+
+	private async _command(url: string, connectionOpts: any, command: string, options?: object) {
+		//todo
+		const mongodbdriver = this.connection.driver as any;
+		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
+		const dblist = dbConnection
+			.connect()
+			.then(async (clientconn: any) => clientconn.db().admin().command(command, options))
+			.then((dbs: { databases: any }) => {
+				return dbs.databases;
+			})
+			.finally(async () => {
+				await dbConnection.close();
+			});
+
+		return dblist;
+	}
+
+	/**
+	 * Create database
+	 *
+	 * @param obj connection object
+	 * @param userOpts db user objct
+	 */
+	private async _createDB(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+			databaseName: string;
+			// topology?: object,
+			// options?: object,
+		},
+		userOpts?: { [key: string]: any },
+	) {
+		const mongodbdriver = this.connection.driver as any;
+		const dbConnection = new mongodbdriver.mongodb.MongoClient(obj.url, obj.connectionOpts);
+		const dblist = dbConnection
+			.connect()
+			.then(async (clientconn: { db: (arg0: string, arg1?: any, arg2?: any) => any }) => {
+				const newDb = clientconn.db(obj.databaseName, obj.topology, obj.options);
+				await newDb.createCollection('test');
+				if (userOpts) {
+					await newDb.addUser(userOpts.DBUser, userOpts.DBPassword, userOpts.options);
+				}
+			})
+			.finally(async () => {
+				await dbConnection.close();
+			});
+
+		return dblist;
+	}
+
+	/**
+	 * Private method to list databases in a server connection
+	 *
+	 * @param url Mongodb url wihtout database
+	 * @param opts Mondodb connection options
+	 */
+	private async _databaseList(url: string, connectionOpts: any) {
+		const mongodbdriver = this.connection.driver as any;
+		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
+		const dblist = dbConnection
+			.connect()
+			.then(async (clientconn: any) => await clientconn.db().admin().listDatabases())
+			.then((dbs: { databases: any }) => {
+				return dbs.databases;
+			})
+			.finally(() => {
+				dbConnection.close();
+			});
+
+		return dblist;
+	}
+
+	private async _removeUser(
+		url: string,
+		connectionOpts: any,
+		username: string,
+		options?: object,
+	) {
+		const mongodbdriver = this.connection.driver as any;
+		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
+		const removeUser = dbConnection
+			.connect()
+			.then((clientconn: any) => clientconn.db().admin().removeUser(username, options))
+			.then((dbs: { databases: any }) => {
+				return dbs.databases;
+			})
+			.finally(() => {
+				dbConnection.close();
+			});
+
+		return removeUser;
 	}
 }

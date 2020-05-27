@@ -57,6 +57,7 @@
     "moleculer": ">=0.14.6",
     "moleculer-db": ">=0.7.9",
     "moleculer-decorators": "1.2.0",
+    "moleculer-docgen": "^0.2.2",
     "pre-commit": "^1.2.2",
     "prettier": "^2.0.5",
     "reflect-metadata": ">=0.1.13",

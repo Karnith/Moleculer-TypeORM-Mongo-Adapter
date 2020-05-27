@@ -19,6 +19,7 @@ service.adapter.repository;
 
 - Standard and multi-tenancy database connecitons
 - Create additional named typeorm connections in a service
+- List databases from a connection
 
 # Install
 
