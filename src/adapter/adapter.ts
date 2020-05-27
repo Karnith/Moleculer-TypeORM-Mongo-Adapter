@@ -471,7 +471,7 @@ export class TypeOrmDbAdapter<T> {
 	}
 
 	private async _command(url: string, connectionOpts: any, command: string, options?: object) {
-		//todo
+		// todo
 		const mongodbdriver = this.connection.driver as any;
 		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
 		const dblist = dbConnection
@@ -533,7 +533,7 @@ export class TypeOrmDbAdapter<T> {
 		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
 		const dblist = dbConnection
 			.connect()
-			.then(async (clientconn: any) => await clientconn.db().admin().listDatabases())
+			.then((clientconn: any) => clientconn.db().admin().listDatabases())
 			.then((dbs: { databases: any }) => {
 				return dbs.databases;
 			})
