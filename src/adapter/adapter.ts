@@ -329,6 +329,15 @@ export class TypeOrmDbAdapter<T> {
 	 * Database utils
 	 */
 
+	/**
+	 * Add user to database
+	 * need to simplify
+	 * @param url database url
+	 * @param connectionOpts database connection options
+	 * @param username user name of user to be added
+	 * @param password password of user to be added
+	 * @param options additional options to be passed to add user
+	 */
 	public async addUser(
 		url: string,
 		connectionOpts: any,
@@ -343,6 +352,12 @@ export class TypeOrmDbAdapter<T> {
 		return this._command(url, connectionOpts, command, options);
 	}
 
+	/**
+	 * Create Database
+	 *
+	 * @param obj Database connection object
+	 * @param userOpts User object if user to be added when db is created
+	 */
 	public async createDB(
 		obj: {
 			[key: string]: any;
@@ -390,6 +405,7 @@ export class TypeOrmDbAdapter<T> {
 
 	/**
 	 * Enrich With Optional Parameters
+	 *
 	 * @param params
 	 * @param query
 	 */
@@ -416,6 +432,7 @@ export class TypeOrmDbAdapter<T> {
 
 	/**
 	 * Transform sort
+	 *
 	 * @param paramSort
 	 */
 	private transformSort(paramSort: string | string[]): { [columnName: string]: 'ASC' | 'DESC' } {
@@ -443,6 +460,15 @@ export class TypeOrmDbAdapter<T> {
 		return {};
 	}
 
+	/**
+	 * Private add user method
+	 *
+	 * @param url URL of database conneciton
+	 * @param connectionOpts Conneciton options for database
+	 * @param username User name of user to be added to db
+	 * @param password Password of user to be added to db
+	 * @param options Additional options for create user.
+	 */
 	private async _addUser(
 		url: string,
 		connectionOpts: object,
