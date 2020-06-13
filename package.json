@@ -1,6 +1,6 @@
 {
   "name": "moleculer-db-adapter-typeorm-mongo",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "typescript mongo adapter using typeorm for moleculer-db-typeorm",
   "main": "./index.js",
   "typings": "./index.d.ts",
@@ -10,6 +10,8 @@
     "copy-package-json": "copyfiles  ./package.json ./README.md ./dist/package",
     "copy-src": "copyfiles -u 3 ./dist/compiled/src/**/*  ./dist/package/",
     "create-package": "npm run copy-package-json && npm run copy-src",
+    "readmePackage": "node ../../node_modules/moleculer-docgen/index.js -t README.md ./adapter/adapter.js",
+    "readmeRoot": "node node_modules/moleculer-docgen/index.js -t README.md ./dist/package/adapter/adapter.js",
     "dev": "node dist/compiled/examples/index.js",
     "dev:decorator": "node dist/compiled/examples/indexDecorator.js",
     "test": "jest --coverage",

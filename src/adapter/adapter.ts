@@ -33,9 +33,9 @@ interface IndexMap {
 /**
  * Mongo TypeORM Adapter
  *
- * @name Moleculer typeorm mongo adapter
+ * @name moleculer-db-adapter-typeorm-mongo
  * @module Service
- *
+ * @class TypeOrmDbAdapter
  */
 export class TypeOrmDbAdapter<T> {
 	public broker: ServiceBroker;
@@ -48,7 +48,10 @@ export class TypeOrmDbAdapter<T> {
 
 	/**
 	 * Create an instance of TypeOrmDBAdapter
-	 * @param opts
+	 *
+	 * @param {Object} opts
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	constructor(opts: ConnectionOptions) {
 		this.opts = opts;
@@ -57,9 +60,10 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Initialize adapter
 	 *
-	 * @param broker
-	 * @param service
+	 * @param broker service broker of service
+	 * @param service service
 	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public init(broker: ServiceBroker, service: Service) {
 		this.broker = broker;
@@ -75,10 +79,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity find
 	 *
-	 * @actions
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
-	 * @param filters
+	 * @param {Object} filters - Filters object to apply
 	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async find(filters: any) {
 		return this.createCursor(filters, false);
@@ -87,8 +97,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity fineone
 	 *
-	 * @param query
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Object} query - Query object
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async findOne(query: FindOneOptions) {
 		return this.repository.findOne(query);
@@ -97,8 +115,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity find by id
 	 *
-	 * @param id
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {String} id - id of document
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async findById(id: string) {
 		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
@@ -113,8 +139,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity find by array of ids
 	 *
-	 * @param idList
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Array<Object|String>} idList - list of ids
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async findByIds(idList: any[]) {
 		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
@@ -127,8 +161,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity count
 	 *
-	 * @param filters
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Object} filters - Object of filters to apply
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async count(filters = {}) {
 		return this.createCursor(filters, true);
@@ -137,8 +179,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity insert
 	 *
-	 * @param entity
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Object} entity - docuemnt to save
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async insert(entity: any) {
 		return this.repository.save(entity);
@@ -147,8 +197,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity create
 	 *
-	 * @param entity
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Object} entity - document to create
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async create(entity: any) {
 		return this.insert(entity);
@@ -157,8 +215,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity insert array of objects
 	 *
-	 * @param entities
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Array<Object>} entities - Array of entities
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async insertMany(entities: any[]) {
 		return Promise.all(entities.map((e) => this.repository.create(e)));
@@ -167,9 +233,17 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity update many
 	 *
-	 * @param where
-	 * @param update
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Promise} where - Promise Object filter
+	 * @param {Promise} update - Promise Object update deep partial
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async updateMany(where: FindConditions<T>, update: DeepPartial<T>) {
 		const criteria: FindConditions<T> = { where } as any;
@@ -179,9 +253,17 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity update by id
 	 *
-	 * @param id
-	 * @param update
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {String} id - id of document
+	 * @param {Object} update - update object using deep partial
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async updateById(id: string, update: { $set: DeepPartial<T> }) {
 		const result = this.repository.update(id, update.$set as any);
@@ -196,8 +278,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity remove many
 	 *
-	 * @param where
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Promise} where - promise object filter
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async removeMany(where: FindConditions<T>) {
 		return this.repository.delete(where);
@@ -206,8 +296,16 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Entity remove by id
 	 *
-	 * @param id
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {String} id - id of document
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async removeById(id: string) {
 		const result = this.repository.delete(id);
@@ -242,10 +340,46 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Conect to database
 	 *
-	 * @param mode
-	 * @param options
-	 * @param cb
+	 * @methods
+	 * @public
 	 *
+	 * @example
+	 * ```js
+	 * this.connect(); // connects to default db connection oof service
+	 * // new connection object
+	 * const newConnection = {
+	 *	database: 'products',
+	 *	type: String(process.env.DBENGINE),
+	 *	username: process.env.MONGOUSERNAME,
+	 *	password: process.env.MONGOPASSWORD,
+	 *	host: process.env.DBHOST,
+	 *	port: Number(process.env.DBPORT),
+	 *	authSource: process.env.AUTHSOURCE,
+	 *	appname: 'Cameo:service:testapiMT:Products',
+	 *	entities: [Products],
+	 *	synchronize: process.env.SYNCHRONIZE,
+	 *	useNewUrlParser: process.env.USENEWURLPARSER,
+	 *	useUnifiedTopology: process.env.USENEWURLPARSER,
+	 * };
+	 * let productsConnection;
+	 * // pass connection type, connection object and callback to retrieve the new connection object already connected
+	 * await this.connect('mt', newConnection, (conn) => {
+	 *	// set new connection object to outside variable for use
+	 *	return (productsConnection = conn);
+	 * });
+	 * // sue new connection to query database
+	 * console.log(await productsConnection!.getMongoRepository(Products).find());
+	 * // close connection when done
+	 * await productsConnection!.close();
+	 * ```
+	 *
+	 * @param {String} mode mode of adapter, either mt or standard
+	 * @param {Object} options connection options
+	 * @param {Object} cb callback with connection in mt mode
+	 *
+	 * @returns {Connection|Repository|ConnectionManager} returns Connection, repository and connection manager
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async connect(mode: string, options: ConnectionOptions, cb: any) {
 		if (mode.toLowerCase() === 'standard') {
@@ -289,6 +423,16 @@ export class TypeOrmDbAdapter<T> {
 
 	/**
 	 * Disconnect from database
+	 * @methods
+	 *
+	 * @public
+	 *
+	 * @example
+	 * ```js
+	 * this.disconnect(); // disconnects default service connection
+	 * ```
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async disconnect() {
 		if (this.connection) {
@@ -308,9 +452,17 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Create cursor
 	 *
-	 * @param params
-	 * @param isCounting
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
 	 *
+	 * @param {Object} params
+	 * @param {Boolean} isCounting
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async createCursor(params: any, isCounting: boolean = false) {
 		if (params) {
@@ -331,32 +483,93 @@ export class TypeOrmDbAdapter<T> {
 
 	/**
 	 * Add user to database
-	 * need to simplify
-	 * @param url database url
-	 * @param connectionOpts database connection options
-	 * @param username user name of user to be added
-	 * @param password password of user to be added
-	 * @param options additional options to be passed to add user
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Database url
+	 * @param {Object} obj.connectionOpts - Database connection options
+	 * @param obj.[key: string] - Additional Key pair paramaters
+	 * @param userOpts - User object
+	 * @param {String} userOpts.username - User name of user to be added
+	 * @param {String} userOpts.password - Password of user to be added
+	 * @param {Object} userOpts.options - Additional options to be passed to add user
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
-	public async addUser(
-		url: string,
-		connectionOpts: any,
-		username: string,
-		password: string,
-		options?: object,
+	public async addDBUser(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+		},
+		userOpts: { [key: string]: any; username: string; password: string; options?: object },
 	) {
-		return this._addUser(url, connectionOpts, username, password, options);
+		return this._addDBUser(obj, userOpts);
 	}
 
-	public async command(url: string, connectionOpts: any, command: string, options?: object) {
-		return this._command(url, connectionOpts, command, options);
+	/**
+	 * Run database command
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
+	 *
+	 * @param {String} url - Mongodb url
+	 * @param {Object} connectionOpts - Mongodb connection options
+	 * @param {Object} command - Command object to send
+	 * @param {Object} options - Additional options to add
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	public async command(url: string, connectionOpts: object, command: object, options?: object) {
+		return this._command({
+			url: url,
+			connectionOpts: connectionOpts,
+			command: command,
+			options: options,
+		});
 	}
 
 	/**
 	 * Create Database
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * await this.adapter.createDB(
+	 *	{
+	 *	    url: `${process.env.URL}${tenantDB}?authSource=${process.env.AUTHSOURCE}`,
+	 *	    connectionOpts: {
+	 *	    useNewUrlParser: Boolean(process.env.USENEWURLPARSER),
+	 *	    useUnifiedTopology: Boolean(process.env.USENEWURLPARSER),
+	 *	},
+	 *	databaseName: tenantDB,
+	 *	},
+	 *	{
+	 *	    DBUser: ctx.params.db_username,
+	 *	    DBPassword: ctx.params.db_password,
+	 *	    options: { roles: ['dbOwner'] },
+	 *	},
+	 * );
+	 * ```
 	 *
-	 * @param obj Database connection object
-	 * @param userOpts User object if user to be added when db is created
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @param {String} obj.databaseName - Mongo db name
+	 * @param userOpts - User object (optional)
+	 * @param {String} userOpts.username - User name
+	 * @param {String} userOpts.Password - User Password
+	 * @param {Object} userOpts.options - User options
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async createDB(
 		obj: {
@@ -367,23 +580,105 @@ export class TypeOrmDbAdapter<T> {
 			// topology?: object,
 			// options?: object,
 		},
-		userOpts?: { [key: string]: any },
+		userOpts: {
+			[key: string]: any;
+			username?: string;
+			password?: string;
+			userOpts?: object;
+		},
 	) {
 		return this._createDB(obj, userOpts);
 	}
 
 	/**
 	 * List Databases on server
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * console.log(
+	 *    await this.adapter
+	 *      .listDataBases(
+	 *        `${process.env.URL}?authSource=${process.env.AUTHSOURCE}`,
+	 *        {
+	 *            useNewUrlParser: Boolean(process.env.USENEWURLPARSER),
+	 *            useUnifiedTopology: Boolean(process.env.USENEWURLPARSER),
+	 *        },
+	 *    )
+	 * );
+	 * ```
 	 *
 	 * @param url Mongodb url wihtout database
-	 * @param opts Mondodb connection options
+	 * @param opts Mongodb connection options
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	public async listDataBases(url: string, opts: any) {
-		return this._databaseList(url, opts);
+		return this._databaseList({ url: url, connectionOpts: opts });
 	}
 
-	public async removeUser(url: string, connectionOpts: any, username: string, options?: object) {
-		return this._removeUser(url, connectionOpts, username, options);
+	/**
+	 * Remove user from db
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
+	 *
+	 * @param obj Database connection object
+	 * @param userOpts User object if user to be removed
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	public async removeUser(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+		},
+		userOpts: {
+			[key: string]: any;
+			username: string;
+			options?: object;
+		},
+	) {
+		return this._removeDBUser(obj, userOpts);
+	}
+
+	/**
+	 * Update DB User
+	 * @methods
+	 * @public
+	 * @example
+	 * ```js
+	 * todo example
+	 * ```
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @param userOpts - User object
+	 * @param {String} userOpts.username - User name
+	 * @param {String} userOpts.Password - User Password
+	 * @param {Object} userOpts.options - User options (roles)
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	public async updateDBUser(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+		},
+		userOpts: {
+			[key: string]: any;
+			username: string;
+			password: string;
+			options?: object;
+		},
+	) {
+		return this._updateDBUser(obj, userOpts);
 	}
 
 	/**
@@ -392,8 +687,13 @@ export class TypeOrmDbAdapter<T> {
 
 	/**
 	 * Run query
-	 * @param isCounting
-	 * @param query
+	 *
+	 * @private
+	 *
+	 * @param {Boolean} isCounting
+	 * @param {Object} query
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	private async _runQuery(isCounting: boolean, query?: FindManyOptions<T>) {
 		if (isCounting) {
@@ -406,8 +706,12 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Enrich With Optional Parameters
 	 *
-	 * @param params
-	 * @param query
+	 * @private
+	 *
+	 * @param {Object} params
+	 * @param {Object} query
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	private async _enrichWithOptionalParameters(params: any, query: FindManyOptions<T>) {
 		if (params.search) {
@@ -433,7 +737,11 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Transform sort
 	 *
+	 * @private
+	 *
 	 * @param paramSort
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	private transformSort(paramSort: string | string[]): { [columnName: string]: 'ASC' | 'DESC' } {
 		let sort = paramSort;
@@ -463,61 +771,84 @@ export class TypeOrmDbAdapter<T> {
 	/**
 	 * Private add user method
 	 *
-	 * @param url URL of database conneciton
-	 * @param connectionOpts Conneciton options for database
-	 * @param username User name of user to be added to db
-	 * @param password Password of user to be added to db
-	 * @param options Additional options for create user.
+	 * @private
+	 *
+	 * @param url - URL of database conneciton
+	 * @param {Object} connectionOpts - Conneciton options for database
+	 * @param {String} username - User name of user to be added to db
+	 * @param {String} password - Password of user to be added to db
+	 * @param {Object} options - Additional options for create user.
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
-	private async _addUser(
-		url: string,
-		connectionOpts: object,
-		username: string,
-		password: string,
-		options?: object,
+	private async _addDBUser(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+		},
+		userOpts: { [key: string]: any; username: string; password: string; options?: object },
 	) {
-		const mongodbdriver = this.connection.driver as any;
-		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
-		const addUser = dbConnection
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
 			.connect()
 			.then(async (clientconn: any) =>
 				clientconn
 					.db()
-					.admin()
-					.addUser(encodeURIComponent(username), encodeURIComponent(password), options),
+					.addUser(
+						encodeURIComponent(userOpts.username),
+						encodeURIComponent(userOpts.password),
+						userOpts.options,
+					),
 			)
-			// .then((dbs: { databases: any }) => {
-			// 	return dbs.databases;
-			// })
 			.finally(async () => {
 				await dbConnection.close();
 			});
-
-		return addUser;
 	}
 
-	private async _command(url: string, connectionOpts: any, command: string, options?: object) {
-		// todo
-		const mongodbdriver = this.connection.driver as any;
-		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
-		const dblist = dbConnection
+	/**
+	 * Run database command
+	 * @private
+	 *
+	 * @param {String} url - Mongodb url
+	 * @param {Object} connectionOpts - Mongodb connection options
+	 * @param {Object} command - Commanf object to send
+	 * @param {Object} options - Additional options to add
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	private async _command(obj: {
+		url: string;
+		connectionOpts: any;
+		command: object;
+		options?: object;
+	}) {
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
 			.connect()
-			.then(async (clientconn: any) => clientconn.db().admin().command(command, options))
-			.then((dbs: { databases: any }) => {
-				return dbs.databases;
-			})
+			.then(async (clientconn: any) =>
+				clientconn.db().admin().command(obj.command, obj.options),
+			)
 			.finally(async () => {
 				await dbConnection.close();
 			});
-
-		return dblist;
 	}
 
 	/**
 	 * Create database
 	 *
-	 * @param obj connection object
-	 * @param userOpts db user objct
+	 * @private
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @param {String} obj.databaseName - Mongo db name
+	 * @param userOpts - User object (optional)
+	 * @param {String} userOpts.username - User name
+	 * @param {String} userOpts.Password - User Password
+	 * @param {Object} userOpts.options - User options
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
 	private async _createDB(
 		obj: {
@@ -528,15 +859,18 @@ export class TypeOrmDbAdapter<T> {
 			// topology?: object,
 			// options?: object,
 		},
-		userOpts?: { [key: string]: any },
+		userOpts?: {
+			[key: string]: any;
+			username?: string;
+			password?: string;
+			userOpts?: object;
+		},
 	) {
-		const mongodbdriver = this.connection.driver as any;
-		const dbConnection = new mongodbdriver.mongodb.MongoClient(obj.url, obj.connectionOpts);
-		const dblist = dbConnection
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
 			.connect()
 			.then(async (clientconn: { db: (arg0: string, arg1?: any, arg2?: any) => any }) => {
 				const newDb = clientconn.db(obj.databaseName, obj.topology, obj.options);
-				await newDb.createCollection('test');
 				if (userOpts) {
 					await newDb.addUser(userOpts.DBUser, userOpts.DBPassword, userOpts.options);
 				}
@@ -544,20 +878,21 @@ export class TypeOrmDbAdapter<T> {
 			.finally(async () => {
 				await dbConnection.close();
 			});
-
-		return dblist;
 	}
 
 	/**
 	 * Private method to list databases in a server connection
 	 *
-	 * @param url Mongodb url wihtout database
-	 * @param opts Mondodb connection options
+	 * @private
+	 *
+	 * @param {String} url - Mongodb url wihtout database
+	 * @param {Object} connectionOpts - Mondodb connection options
+	 *
+	 * @memberof TypeOrmDbAdapter
 	 */
-	private async _databaseList(url: string, connectionOpts: any) {
-		const mongodbdriver = this.connection.driver as any;
-		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
-		const dblist = dbConnection
+	private async _databaseList(obj: { url: string; connectionOpts: object }) {
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
 			.connect()
 			.then((clientconn: any) => clientconn.db().admin().listDatabases())
 			.then((dbs: { databases: any }) => {
@@ -566,28 +901,84 @@ export class TypeOrmDbAdapter<T> {
 			.finally(() => {
 				dbConnection.close();
 			});
-
-		return dblist;
 	}
 
-	private async _removeUser(
-		url: string,
-		connectionOpts: any,
-		username: string,
-		options?: object,
+	/**
+	 * Private remove DB User
+	 *
+	 * @private
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @param userOpts - User object
+	 * @param {String} userOpts.username - User name
+	 * @param {String} userOpts.Password - User Password
+	 * @param {Object} userOpts.options - User options
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	private async _removeDBUser(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+		},
+		userOpts: { [key: string]: any; username: string; options?: object },
 	) {
-		const mongodbdriver = this.connection.driver as any;
-		const dbConnection = new mongodbdriver.mongodb.MongoClient(url, connectionOpts);
-		const removeUser = dbConnection
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
 			.connect()
-			.then((clientconn: any) => clientconn.db().admin().removeUser(username, options))
-			.then((dbs: { databases: any }) => {
-				return dbs.databases;
-			})
+			.then((clientconn: any) =>
+				clientconn.db().removeUser(userOpts.username, userOpts.options),
+			)
 			.finally(() => {
 				dbConnection.close();
 			});
+	}
 
-		return removeUser;
+	/**
+	 * Update DB User
+	 *
+	 * @private
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @param userOpts - User object
+	 * @param {String} userOpts.username - User name
+	 * @param {String} userOpts.Password - User Password
+	 * @param {Object} userOpts.options - User options (roles)
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	private async _updateDBUser(
+		obj: {
+			[key: string]: any;
+			url: string;
+			connectionOpts: any;
+		},
+		userOpts: { [key: string]: any; username: string; password: string; options?: object },
+	) {
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
+			.connect()
+			.then(async (clientconn: any) =>
+				clientconn.db().command({
+					createUser: userOpts.username,
+					pwd: userOpts.password,
+					// customData: { <any information> },
+					roles: [userOpts.options],
+				}),
+			)
+			.finally(async () => {
+				await dbConnection.close();
+			});
+	}
+
+	private _createDBConnection(obj: { url: string; connectionOpts: any }) {
+		const mongodbdriver = this.connection.driver as any;
+		const dbConnection = new mongodbdriver.mongodb.MongoClient(obj.url, obj.connectionOpts);
+		return dbConnection;
 	}
 }

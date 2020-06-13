@@ -53,7 +53,9 @@
     "no-console": true,
     "prefer-const": true,
     "no-var-requires": false,
-    "no-submodule-imports": false
+    "no-submodule-imports": false,
+    "jsdoc-format": false,
+    "object-literal-shorthand": false
   }
 }
 
