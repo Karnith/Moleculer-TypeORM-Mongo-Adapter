@@ -49,7 +49,7 @@ module.exports = {
 		'@typescript-eslint/no-parameter-properties': 'error',
 		'@typescript-eslint/no-misused-new': 'error',
 		'@typescript-eslint/no-for-in-array': 'error',
-		'@typescript-eslint/no-var-requires': 'error',
+		'@typescript-eslint/no-var-requires': 'off',
 		'@typescript-eslint/prefer-function-type': 'error',
 		'@typescript-eslint/promise-function-async': 'error',
 		'@typescript-eslint/restrict-plus-operands': 'error',

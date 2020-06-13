@@ -1,7 +1,7 @@
 {
-  "name": "moleculer-db-adapter-typeorm",
-  "version": "0.1.4",
-  "description": "typescript sql adapter using typeorm",
+  "name": "moleculer-db-adapter-typeorm-mongo",
+  "version": "0.0.3",
+  "description": "typescript mongo adapter using typeorm for moleculer-db-typeorm",
   "main": "./index.js",
   "typings": "./index.d.ts",
   "scripts": {
@@ -10,6 +10,8 @@
     "copy-package-json": "copyfiles  ./package.json ./README.md ./dist/package",
     "copy-src": "copyfiles -u 3 ./dist/compiled/src/**/*  ./dist/package/",
     "create-package": "npm run copy-package-json && npm run copy-src",
+    "readmePackage": "node ../../node_modules/moleculer-docgen/index.js -t README.md ./adapter/adapter.js",
+    "readmeRoot": "node node_modules/moleculer-docgen/index.js -t README.md ./dist/package/adapter/adapter.js",
     "dev": "node dist/compiled/examples/index.js",
     "dev:decorator": "node dist/compiled/examples/indexDecorator.js",
     "test": "jest --coverage",
@@ -25,19 +27,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dkuida/moleculer-db-adapter-typeorm.git"
+    "url": "git+https://github.com/Karnith/Moleculer-TypeORM-Mongo-Adapter.git"
   },
   "keywords": [
     "moleculer",
     "database",
     "typeorm"
   ],
-  "author": "Dan Kuida",
+  "author": "Matthew Marino",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/dkuida/moleculer-db-adapter-typeorm/issues"
+    "url": "https://github.com/Karnith/Moleculer-TypeORM-Mongo-Adapter/issues"
   },
-  "homepage": "https://github.com/dkuida/moleculer-db-adapter-typeorm#readme",
+  "homepage": "https://github.com/Karnith/Moleculer-TypeORM-Mongo-Adapter#readme",
   "devDependencies": {
     "@dkuida/logger-wrapper": ">=1.5.3",
     "@types/bluebird": "^3.5.30",
@@ -57,6 +59,7 @@
     "moleculer": ">=0.14.6",
     "moleculer-db": ">=0.7.9",
     "moleculer-decorators": "1.2.0",
+    "moleculer-docgen": "^0.2.2",
     "pre-commit": "^1.2.2",
     "prettier": "^2.0.5",
     "reflect-metadata": ">=0.1.13",
@@ -77,8 +80,7 @@
   },
   "pre-commit": [
     "lint",
-    "tsc",
-    "test"
+    "tsc"
   ],
   "jest": {
     "testEnvironment": "node",
