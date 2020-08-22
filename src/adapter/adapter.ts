@@ -265,14 +265,15 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	public async updateById(id: string, update: { $set: DeepPartial<T> }) {
-		const result = this.repository.update(id, update.$set as any);
-		return result.then(() => {
-			// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-			// @ts-ignore
-			update.$set.id = id;
-			return update.$set;
-		});
+	public async updateById(id: string, update: DeepPartial<T>) {
+		const result = this.repository.update(id, update);
+		// return result.then(() => {
+		// 	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+		// 	// @ts-ignore
+		// 	update.$set.id = id;
+		// 	return update.$set;
+		// });
+		return result;
 	}
 
 	/**
@@ -361,16 +362,33 @@ export class TypeOrmDbAdapter<T> {
 	 *	useNewUrlParser: process.env.USENEWURLPARSER,
 	 *	useUnifiedTopology: process.env.USENEWURLPARSER,
 	 * };
-	 * let productsConnection;
-	 * // pass connection type, connection object and callback to retrieve the new connection object already connected
-	 * await this.connect('mt', newConnection, (conn) => {
-	 *	// set new connection object to outside variable for use
-	 *	return (productsConnection = conn);
-	 * });
-	 * // sue new connection to query database
-	 * console.log(await productsConnection!.getMongoRepository(Products).find());
+	 * const productsConnection = await new this.Promise(
+	 *   async (resolve, reject) => {
+	 *     // pass connection type, connection object and callback to retrieve the new connection object already connected
+	 *     await this.connect('mt', newConnection, (conn) => {
+	 *       if (!conn) {
+	 *         return reject("can't create connection");
+	 *       }
+	 *	     // set new connection object to outside variable for use
+	 *	     return resolve(conn);
+	 *     });
+	 *   }
+	 * );
+	 * // use new connection to query database
+	 * await productsConnection.connection.connect();
+	 * console.log(await productsConnection.connection.getMongoRepository(Products).find());
 	 * // close connection when done
-	 * await productsConnection!.close();
+	 * await productsConnection.connection.close();
+	 * // use manager (Connection manager) to get all the available connections
+	 * console.log(productsConnection.manager);
+	 * // get connection you want to use
+	 * const connection = productsConnection.manager.get('products')
+	 * console.log(connection);
+	 * // opens connection
+	 * connection.connect();
+	 * {...}
+	 * // closes connection
+	 * connection.close();
 	 * ```
 	 *
 	 * @param {String} mode mode of adapter, either mt or standard
@@ -385,7 +403,7 @@ export class TypeOrmDbAdapter<T> {
 		if (mode.toLowerCase() === 'standard') {
 			const connectionManager = getConnectionManager();
 			const connectionPromise = connectionManager.create({
-				type: 'mongodb',
+				// type: 'mongodb',
 				entities: [this.entity],
 				synchronize: true,
 				// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
@@ -412,11 +430,13 @@ export class TypeOrmDbAdapter<T> {
 				this.repository = this.connection.getMongoRepository(this.entity);
 			} else {
 				const connectionManager = getConnectionManager();
-				const connectionPromise = connectionManager.create({
+				connectionManager.create({ ...options });
+				/* const connectionPromise = connectionManager.create({
 					...options,
 				});
-				await connectionPromise.connect();
-				cb(getConnection(options.name));
+				// may need to remove, should probably remove..
+				await connectionPromise.connect(); */
+				cb({ connection: connectionManager.get(options.name), manager: connectionManager });
 			}
 		}
 	}
@@ -588,6 +608,40 @@ export class TypeOrmDbAdapter<T> {
 		},
 	) {
 		return this._createDB(obj, userOpts);
+	}
+
+	public async dropDB(obj: {
+		[key: string]: any;
+		url: string;
+		connectionOpts: any;
+		databaseName: string;
+		// topology?: object,
+		// options?: object,
+	}) {
+		return this._dropDatabase(obj);
+	}
+
+	/**
+	 * Get all users on db
+	 * @public
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @param {String} obj.databaseName - Mongo db name
+	 * @returns {Object} Users on database
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	public async getAllDBUsers(obj: {
+		[key: string]: any;
+		url: string;
+		connectionOpts: any;
+		databaseName: string;
+		// topology?: object,
+		// options?: object,
+	}) {
+		return this._getAllDBUsers(obj);
 	}
 
 	/**
@@ -900,6 +954,45 @@ export class TypeOrmDbAdapter<T> {
 			})
 			.finally(() => {
 				dbConnection.close();
+			});
+	}
+
+	/**
+	 * Private method to Drop database
+	 * @private
+	 *
+	 * @param {String} url - Mongodb url wihtout database
+	 * @param {Object} connectionOpts - Mondodb connection options
+	 */
+	private async _dropDatabase(obj: { url: string; connectionOpts: object }) {
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
+			.connect()
+			.then((clientconn: any) => clientconn.db().admin().dropDatabase())
+			.finally(() => {
+				dbConnection.close();
+			});
+	}
+
+	/**
+	 * Get all users on db
+	 *
+	 * @private
+	 *
+	 * @param obj - Connection object
+	 * @param {String} obj.url - Mongo db url
+	 * @param {Object} obj.connectionOpts - Mongo connection options
+	 * @returns {Array} users on db
+	 *
+	 * @memberof TypeOrmDbAdapter
+	 */
+	private async _getAllDBUsers(obj: { [key: string]: any; url: string; connectionOpts: any }) {
+		const dbConnection = this._createDBConnection(obj);
+		return dbConnection
+			.connect()
+			.then(async (clientconn: any) => clientconn.db().command({ usersInfo: 1 }))
+			.finally(async () => {
+				await dbConnection.close();
 			});
 	}
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // @ts-nocheck
 import loggerWrapper from './bin/logger';
-import * as storeService from 'moleculer-db';
+import * as storeService from 'moleculer-db-typeorm';
 import { Context, ServiceBroker } from 'moleculer';
 import { Post } from './Post';
 import { TypeOrmDbAdapter } from '../src';

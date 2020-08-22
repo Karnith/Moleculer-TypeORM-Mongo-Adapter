@@ -3,7 +3,7 @@ import { Post } from './Post';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
-import * as storeService from 'moleculer-db';
+import * as storeService from 'moleculer-db-typeorm';
 import { Action, Service } from 'moleculer-decorators';
 
 import { TypeOrmDbAdapter } from '../src/adapter/adapter';
