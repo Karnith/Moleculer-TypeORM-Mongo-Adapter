@@ -21,7 +21,6 @@ module.exports = {
     },
     rules: {
 		// Disabled Rules
-		'@typescript-eslint/camelcase': ['error', { properties: 'never' }],
 		'@typescript-eslint/explicit-function-return-type': 'off',
 		'@typescript-eslint/explicit-member-accessibility': 'off',
 		'@typescript-eslint/interface-name-prefix': 'off',
@@ -40,8 +39,20 @@ module.exports = {
 		'@typescript-eslint/adjacent-overload-signatures': 'error',
 		'@typescript-eslint/array-type': 'error',
 		'@typescript-eslint/await-thenable': 'error',
-		'@typescript-eslint/class-name-casing': 'error',
 		'@typescript-eslint/member-ordering': 'error',
+		'@typescript-eslint/naming-convention': [
+			'error',
+			// { selector: 'default', format: ['camelCase', 'snake_case'] },
+			{ selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
+			{ selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
+			{
+				selector: 'memberLike',
+				modifiers: ['private'],
+				format: ['camelCase'],
+				leadingUnderscore: 'require',
+			},
+			{ selector: 'typeLike', format: ['PascalCase'] },
+		],
 		'@typescript-eslint/no-explicit-any': 'error',
 		'@typescript-eslint/no-unnecessary-type-assertion': 'error',
 		'@typescript-eslint/no-unused-vars': 'warn',
@@ -49,21 +60,14 @@ module.exports = {
 		'@typescript-eslint/no-parameter-properties': 'error',
 		'@typescript-eslint/no-misused-new': 'error',
 		'@typescript-eslint/no-for-in-array': 'error',
-		'@typescript-eslint/no-var-requires': 'off',
+		'@typescript-eslint/no-var-requires': 'error',
 		'@typescript-eslint/prefer-function-type': 'error',
 		'@typescript-eslint/promise-function-async': 'error',
 		'@typescript-eslint/restrict-plus-operands': 'error',
-		'@typescript-eslint/semi': [
-			'error',
-			"always"
-		],
+		'@typescript-eslint/semi': ['error', 'always'],
 		'@typescript-eslint/type-annotation-spacing': 'error',
 		'@typescript-eslint/unified-signatures': 'error',
-		'@typescript-eslint/indent': [
-			"warn",
-			"tab",
-			{ "SwitchCase": 1 }
-		],
+		'@typescript-eslint/indent': ['warn', 'tab', { SwitchCase: 1 }],
 		// '@typescript-eslint/quotes': [
 		// 	"warn",
 		// 	"double"

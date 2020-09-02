@@ -43,8 +43,8 @@ export class TypeOrmDbAdapter<T> {
 	public repository: MongoRepository<T>;
 	public connection: Connection;
 	public connectionMngr: ConnectionManager;
-	private entity: EntitySchema<T>;
-	private opts: ConnectionOptions;
+	private _entity: EntitySchema<T>;
+	private _opts: ConnectionOptions;
 
 	/**
 	 * Create an instance of TypeOrmDBAdapter
@@ -54,7 +54,7 @@ export class TypeOrmDbAdapter<T> {
 	 * @memberof TypeOrmDbAdapter
 	 */
 	constructor(opts: ConnectionOptions) {
-		this.opts = opts;
+		this._opts = opts;
 	}
 
 	/**
@@ -73,7 +73,7 @@ export class TypeOrmDbAdapter<T> {
 		if (!isValid) {
 			throw new Error('if model is provided - it should be a typeorm repository');
 		}
-		this.entity = entityFromService;
+		this._entity = entityFromService;
 	}
 
 	/**
@@ -131,7 +131,7 @@ export class TypeOrmDbAdapter<T> {
 		return this.repository
 			.findByIds([new objectIdInstance(id)])
 			.then(async (result) => Promise.resolve(result[0]));
-		// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
 		// return this.repository.findOne(new entity(), { id: id });
 	}
@@ -326,9 +326,9 @@ export class TypeOrmDbAdapter<T> {
 	}
 
 	public saveLargFile(file: any) {
-		const mongoClient = (getConnection(this.opts.name).driver as any).queryRunner
+		const mongoClient = (getConnection(this._opts.name).driver as any).queryRunner
 			.databaseConnetion as MongoClient;
-		const db: any = mongoClient.db(this.opts.database?.toString());
+		const db: any = mongoClient.db(this._opts.database?.toString());
 		const bucket = new GridFSBucket(db);
 		fs.createReadStream(file)
 			.pipe(bucket.openUploadStream(file))
@@ -399,35 +399,36 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	public async connect(mode: string, options: ConnectionOptions, cb: any) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	public async connect(mode: string, options: ConnectionOptions, cb: any): Promise<void> {
 		if (mode.toLowerCase() === 'standard') {
 			const connectionManager = getConnectionManager();
 			const connectionPromise = connectionManager.create({
 				// type: 'mongodb',
-				entities: [this.entity],
+				entities: [this._entity],
 				synchronize: true,
-				// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore
 				useNewUrlParser: true,
 				useUnifiedTopology: true,
-				...this.opts,
+				...this._opts,
 			});
 			const connection = await connectionPromise.connect();
 			this.connection = connection;
-			this.repository = this.connection.getMongoRepository(this.entity);
+			this.repository = this.connection.getMongoRepository(this._entity);
 		}
 
 		if (mode.toLowerCase() === 'mt') {
 			if (!options) {
 				const connectionManager = getConnectionManager();
 				const connectionPromise = connectionManager.create({
-					entities: [this.entity],
-					...this.opts,
+					entities: [this._entity],
+					...this._opts,
 				});
 				const connection = await connectionPromise.connect();
 				this.connection = connection;
 				this.connectionMngr = connectionManager;
-				this.repository = this.connection.getMongoRepository(this.entity);
+				this.repository = this.connection.getMongoRepository(this._entity);
 			} else {
 				const connectionManager = getConnectionManager();
 				connectionManager.create({ ...options });
@@ -527,7 +528,12 @@ export class TypeOrmDbAdapter<T> {
 			url: string;
 			connectionOpts: any;
 		},
-		userOpts: { [key: string]: any; username: string; password: string; options?: object },
+		userOpts: {
+			[key: string]: any;
+			username: string;
+			password: string;
+			options?: Record<string, unknown>;
+		},
 	) {
 		return this._addDBUser(obj, userOpts);
 	}
@@ -548,7 +554,12 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	public async command(url: string, connectionOpts: object, command: object, options?: object) {
+	public async command(
+		url: string,
+		connectionOpts: Record<string, unknown>,
+		command: Record<string, unknown>,
+		options?: Record<string, unknown>,
+	) {
 		return this._command({
 			url: url,
 			connectionOpts: connectionOpts,
@@ -604,7 +615,7 @@ export class TypeOrmDbAdapter<T> {
 			[key: string]: any;
 			username?: string;
 			password?: string;
-			userOpts?: object;
+			userOpts?: Record<string, unknown>;
 		},
 	) {
 		return this._createDB(obj, userOpts);
@@ -694,7 +705,7 @@ export class TypeOrmDbAdapter<T> {
 		userOpts: {
 			[key: string]: any;
 			username: string;
-			options?: object;
+			options?: Record<string, unknown>;
 		},
 	) {
 		return this._removeDBUser(obj, userOpts);
@@ -729,7 +740,7 @@ export class TypeOrmDbAdapter<T> {
 			[key: string]: any;
 			username: string;
 			password: string;
-			options?: object;
+			options?: Record<string, unknown>;
 		},
 	) {
 		return this._updateDBUser(obj, userOpts);
@@ -773,7 +784,7 @@ export class TypeOrmDbAdapter<T> {
 		}
 
 		if (params.sort) {
-			const sort = this.transformSort(params.sort);
+			const sort = this._transformSort(params.sort);
 			if (sort) {
 				query.order = sort as any;
 			}
@@ -797,7 +808,7 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	private transformSort(paramSort: string | string[]): { [columnName: string]: 'ASC' | 'DESC' } {
+	private _transformSort(paramSort: string | string[]): { [columnName: string]: 'ASC' | 'DESC' } {
 		let sort = paramSort;
 		if (typeof sort === 'string') {
 			sort = sort.replace(/,/, ' ').split(' ');
@@ -811,7 +822,7 @@ export class TypeOrmDbAdapter<T> {
 					sortObj[s] = 'ASC';
 				}
 			});
-			// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			return sortObj;
 		}
@@ -841,7 +852,12 @@ export class TypeOrmDbAdapter<T> {
 			url: string;
 			connectionOpts: any;
 		},
-		userOpts: { [key: string]: any; username: string; password: string; options?: object },
+		userOpts: {
+			[key: string]: any;
+			username: string;
+			password: string;
+			options?: Record<string, unknown>;
+		},
 	) {
 		const dbConnection = this._createDBConnection(obj);
 		return dbConnection
@@ -874,8 +890,8 @@ export class TypeOrmDbAdapter<T> {
 	private async _command(obj: {
 		url: string;
 		connectionOpts: any;
-		command: object;
-		options?: object;
+		command: Record<string, unknown>;
+		options?: Record<string, unknown>;
 	}) {
 		const dbConnection = this._createDBConnection(obj);
 		return dbConnection
@@ -917,7 +933,7 @@ export class TypeOrmDbAdapter<T> {
 			[key: string]: any;
 			username?: string;
 			password?: string;
-			userOpts?: object;
+			userOpts?: Record<string, unknown>;
 		},
 	) {
 		const dbConnection = this._createDBConnection(obj);
@@ -944,7 +960,7 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	private async _databaseList(obj: { url: string; connectionOpts: object }) {
+	private async _databaseList(obj: { url: string; connectionOpts: Record<string, unknown> }) {
 		const dbConnection = this._createDBConnection(obj);
 		return dbConnection
 			.connect()
@@ -964,7 +980,7 @@ export class TypeOrmDbAdapter<T> {
 	 * @param {String} url - Mongodb url wihtout database
 	 * @param {Object} connectionOpts - Mondodb connection options
 	 */
-	private async _dropDatabase(obj: { url: string; connectionOpts: object }) {
+	private async _dropDatabase(obj: { url: string; connectionOpts: Record<string, unknown> }) {
 		const dbConnection = this._createDBConnection(obj);
 		return dbConnection
 			.connect()
@@ -1017,7 +1033,7 @@ export class TypeOrmDbAdapter<T> {
 			url: string;
 			connectionOpts: any;
 		},
-		userOpts: { [key: string]: any; username: string; options?: object },
+		userOpts: { [key: string]: any; username: string; options?: Record<string, unknown> },
 	) {
 		const dbConnection = this._createDBConnection(obj);
 		return dbConnection
@@ -1051,7 +1067,12 @@ export class TypeOrmDbAdapter<T> {
 			url: string;
 			connectionOpts: any;
 		},
-		userOpts: { [key: string]: any; username: string; password: string; options?: object },
+		userOpts: {
+			[key: string]: any;
+			username: string;
+			password: string;
+			options?: Record<string, unknown>;
+		},
 	) {
 		const dbConnection = this._createDBConnection(obj);
 		return dbConnection
