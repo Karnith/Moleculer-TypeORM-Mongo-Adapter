@@ -25,6 +25,7 @@ import fs from 'fs';
 // import * as Moleculer from 'moleculer';
 import { Service, ServiceBroker } from 'moleculer';
 import assert from 'assert';
+const objectId = PlatformTools.load('mongodb').ObjectID;
 
 interface IndexMap {
 	[key: string]: string;
@@ -65,7 +66,7 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	public init(broker: ServiceBroker, service: Service) {
+	public init(broker: ServiceBroker, service: Service): void {
 		this.broker = broker;
 		this.service = service;
 		const entityFromService = this.service.schema.model;
@@ -74,6 +75,10 @@ export class TypeOrmDbAdapter<T> {
 			throw new Error('if model is provided - it should be a typeorm repository');
 		}
 		this._entity = entityFromService;
+	}
+
+	encodeID(id: string): typeof objectId {
+		return new objectId(id);
 	}
 
 	/**
@@ -127,9 +132,8 @@ export class TypeOrmDbAdapter<T> {
 	 * @memberof TypeOrmDbAdapter
 	 */
 	public async findById(id: string) {
-		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
 		return this.repository
-			.findByIds([new objectIdInstance(id)])
+			.findByIds([new objectId(id)])
 			.then(async (result) => Promise.resolve(result[0]));
 		// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 		// @ts-ignore
@@ -151,9 +155,8 @@ export class TypeOrmDbAdapter<T> {
 	 * @memberof TypeOrmDbAdapter
 	 */
 	public async findByIds(idList: any[]) {
-		const objectIdInstance = PlatformTools.load('mongodb').ObjectID;
 		const idArray: any[] = idList.map((id) => {
-			return id instanceof objectIdInstance ? id : new objectIdInstance(id);
+			return id instanceof objectId ? id : new objectId(id);
 		});
 		return this.repository.findByIds(idArray);
 	}
@@ -265,14 +268,20 @@ export class TypeOrmDbAdapter<T> {
 	 *
 	 * @memberof TypeOrmDbAdapter
 	 */
-	public async updateById(id: string, update: DeepPartial<T>) {
-		const result = this.repository.update(id, update);
-		// return result.then(() => {
-		// 	// eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-		// 	// @ts-ignore
-		// 	update.$set.id = id;
-		// 	return update.$set;
-		// });
+	public async updateById(
+		id: string,
+		update: DeepPartial<T>,
+		options?: Record<string, unknown>,
+	): Promise<Record<string, unknown>> {
+		const findOneAndReplaceOption = options || { returnOriginal: false };
+		const result = await this.repository
+			.findOneAndUpdate({ _id: new objectId(id) }, update, findOneAndReplaceOption)
+			.then((res) => {
+				const data = res.value;
+				data.id = data._id;
+				delete data._id;
+				return data;
+			});
 		return result;
 	}
 
@@ -309,10 +318,8 @@ export class TypeOrmDbAdapter<T> {
 	 * @memberof TypeOrmDbAdapter
 	 */
 	public async removeById(id: string) {
-		const result = this.repository.delete(id);
-		return result.then(() => {
-			return { id };
-		});
+		const result = await this.repository.deleteOne({ _id: new objectId(id) });
+		return result;
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
