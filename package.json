@@ -1,6 +1,6 @@
 {
   "name": "moleculer-db-adapter-typeorm-mongo",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "typescript mongo adapter using typeorm for moleculer-db-typeorm",
   "main": "./index.js",
   "typings": "./index.d.ts",
